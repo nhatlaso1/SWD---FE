@@ -28,7 +28,10 @@ import {
   CircleHelp,
   CalendarClock,
   Warehouse,
-  Import
+  Import,
+  Shirt,
+  Blocks,
+  Users
 } from 'lucide-react';
 
 export type Icon = LucideIcon;
@@ -39,6 +42,9 @@ export const Icons = {
   attendees: User, // Khách tham dự
   warehouse: Warehouse, // Kho
   import: Import, // Nhập hàng
+  shirt: Shirt, // Sản phẩm,
+  users: Users, // Người dùng
+  blocks: Blocks, // Loại sản phẩm
   calendarclock: CalendarClock, // Sự kiện diễn ra
   schedule: Calendar, // Lịch trình
   location: MapPin, // Khu vực sự kiện

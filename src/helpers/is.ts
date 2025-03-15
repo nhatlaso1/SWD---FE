@@ -20,6 +20,10 @@ export default class helper_is {
     return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
   }
 
+  isAdmin() {
+    return this.localStorage_get('role') === 'ADMIN';
+  }
+
   /**
    * Check if it is email
    * @param {*} email

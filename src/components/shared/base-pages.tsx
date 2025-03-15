@@ -1,6 +1,5 @@
 import PageHead from '@/components/shared/page-head.jsx';
 import { Breadcrumbs } from '@/components/shared/breadcrumbs';
-import UserNav from './user-nav';
 import { SidebarTrigger } from '../ui/sidebar';
 interface IBasePages {
   children?: React.ReactNode;
@@ -19,7 +18,7 @@ const BasePages = ({
     <>
       <PageHead title={pageHead} />
       <div className={`${className}`}>
-        <div className=" items-center justify-between max-md:pt-4 md:flex md:pr-8">
+        <div className=" mt-4 items-center justify-between max-md:pt-4 md:flex md:pr-8">
           <div className="flex items-center">
             <SidebarTrigger />
             <div
@@ -31,7 +30,6 @@ const BasePages = ({
           </div>
           <div className="hidden items-center  space-x-4 pt-4 md:flex">
             {/* <ModeToggle /> */}
-            <UserNav />
           </div>
         </div>
         {children}

@@ -1,6 +1,5 @@
 import { ColumnDef } from '@tanstack/react-table';
 import { CellAction } from './cell-action';
-import __helpers from '@/helpers';
 import { useSearchParams } from 'react-router-dom';
 
 export const columns: ColumnDef<any>[] = [
@@ -19,47 +18,32 @@ export const columns: ColumnDef<any>[] = [
   },
 
   {
-    accessorKey: 'user_code',
-    header: 'Mã người dùng',
-    enableSorting: true
-  },
-
-  {
-    accessorKey: 'user_name',
-    header: 'Tên người dùng',
-    enableSorting: true
-  },
-
-  {
-    accessorKey: 'full_name',
-    header: 'Họ và tên',
-    enableSorting: true
-  },
-
-  {
-    accessorKey: 'email',
-    header: 'Email',
-    enableSorting: true
-  },
-  {
-    accessorKey: 'warehouse',
-    header: 'Mã kho',
+    accessorKey: 'productType_name',
+    header: 'Tên loại sản phẩm',
     enableSorting: true,
-    cell: ({ row }) => <span>{row.original.warehouse?.warehouse_code}</span>
+    cell: ({ row }) => <span>{row.original.productType_name}</span>
   },
   {
-    accessorKey: 'status',
-    header: 'Trạng thái',
-    enableSorting: true
-  },
-  {
-    accessorKey: 'created_at',
-    header: 'Ngày tạo',
+    accessorKey: 'productType_code',
+    header: 'Mã loại sản phẩm',
     enableSorting: true,
-    cell: ({ row }) => (
-      <span>{__helpers.convertToDateDDMMYYYY(row.original.created_at)}</span>
-    )
+    cell: ({ row }) => <span>{row.original.productType_code}</span>
   },
+
+  {
+    accessorKey: 'price',
+    header: 'Giá',
+    enableSorting: true,
+    cell: ({ row }) => <span>{row.original.price.toLocaleString()} đ</span> // Format số tiền
+  },
+
+  {
+    accessorKey: 'category_name',
+    header: 'Danh mục',
+    enableSorting: true,
+    cell: ({ row }) => <span>{row.original.category_name}</span>
+  },
+
   {
     id: 'actions',
     cell: ({ row }) => <CellAction data={row.original} />

@@ -4,7 +4,7 @@ import helpers from '../helpers';
 const baseURL =
   process.env.NODE_ENV === 'production'
     ? 'https://swd392-be-web-hsdcamfearhyh8ga.eastasia-01.azurewebsites.net/'
-    : 'http://localhost:8080/';
+    : 'https://swd392-be-web-hsdcamfearhyh8ga.eastasia-01.azurewebsites.net/';
 
 const onRequestSuccess = (config: any) => {
   config.headers['Authorization'] = `Bearer ${helpers.cookie_get('AT')}`;

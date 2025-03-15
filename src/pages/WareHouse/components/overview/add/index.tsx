@@ -13,13 +13,16 @@ import {
   CardTitle
 } from '@/components/ui/card';
 import { Save } from 'lucide-react';
+import { useCreateWarehouse } from '@/queries/admin.query';
+import { useToast } from '@/components/ui/use-toast';
 
 export const AddWareHouse = () => {
   const [formData, setFormData] = useState({
-    category_code: '',
-    category_name: ''
+    warehouse_name: '',
+    address: ''
   });
-
+  const { mutateAsync: createWarehouse } = useCreateWarehouse();
+  const { toast } = useToast();
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData({
@@ -28,10 +31,23 @@ export const AddWareHouse = () => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Category data:', formData);
-    // Add your submission logic here
+    try {
+      await createWarehouse(formData);
+      console.log('Warehouse created:', formData);
+      setFormData({
+        warehouse_name: '',
+        address: ''
+      });
+      toast({
+        title: 'Thành công',
+        description: 'Thêm nhà kho thành công',
+        variant: 'success'
+      });
+    } catch (error) {
+      console.error('Error creating warehouse:', error);
+    }
   };
 
   return (
@@ -47,36 +63,24 @@ export const AddWareHouse = () => {
       <form onSubmit={handleSubmit}>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="category_code">Mã nhà kho</Label>
+            <Label htmlFor="warehouse_name">Tên nhà kho</Label>
             <Input
-              id="category_code"
-              name="category_code"
-              placeholder="INV005"
-              value={formData.category_code}
+              id="warehouse_name"
+              name="warehouse_name"
+              placeholder="Kho Hàng HCM"
+              value={formData.warehouse_name}
               onChange={handleInputChange}
               className="focus:ring-2 focus:ring-primary"
               required
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="category_name">Tên nhà kho</Label>
+            <Label htmlFor="address">Địa chỉ nhà kho</Label>
             <Input
-              id="category_name"
-              name="category_name"
-              placeholder="Tên nhà kho"
-              value={formData.category_name}
-              onChange={handleInputChange}
-              className="focus:ring-2 focus:ring-primary"
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="category_name">Địa chỉ nhà kho</Label>
-            <Input
-              id="category_name"
-              name="category_name"
-              placeholder="Địa chỉ nhà kho"
-              value={formData.category_name}
+              id="address"
+              name="address"
+              placeholder="Quận Sơn Trà, HCM"
+              value={formData.address}
               onChange={handleInputChange}
               className="focus:ring-2 focus:ring-primary"
               required

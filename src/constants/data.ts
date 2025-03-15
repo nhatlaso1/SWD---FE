@@ -11,42 +11,6 @@ export type Product = {
 
 export const navItems: any = [
   {
-    label: 'Quản lý',
-    detail: [
-      {
-        title: 'Người dùng',
-        url: '/user',
-        icon: 'attendees',
-        shortcut: ['p', 'p'],
-        isActive: false
-      },
-      {
-        title: 'Sản phẩm',
-        url: '/product',
-        icon: 'product',
-        shortcut: ['p', 'p'],
-        isActive: false
-      },
-      {
-        title: 'Kho',
-        url: '/warehouse',
-        icon: 'warehouse',
-        shortcut: ['v', 'v'],
-        isActive: false
-      },
-      {
-        title: 'Danh mục',
-        url: '/category',
-        icon: 'dashboard',
-        shortcut: ['v', 'v'],
-        isActive: false
-      }
-    ]
-  }
-];
-
-export const navItemsManager: any = [
-  {
     label: 'Trang chủ',
     detail: [
       {
@@ -60,23 +24,62 @@ export const navItemsManager: any = [
     ]
   },
   {
+    label: 'Account',
+    detail: [
+      {
+        title: 'Người dùng',
+        url: '/user',
+        icon: 'attendees',
+        shortcut: ['p', 'p'],
+        isActive: false
+      }
+      // {
+      //   title: 'Nhân viên',
+      //   url: '/manager/staff',
+      //   icon: 'users',
+      //   shortcut: ['v', 'v'],
+      //   isActive: false
+      // }
+    ]
+  },
+  {
     label: 'Quản lý',
     detail: [
       {
-        title: 'Hàng tồn kho',
-        url: '/manager/inventory',
+        title: 'Kho',
+        url: '/warehouse',
         icon: 'warehouse',
+        shortcut: ['v', 'v'],
+        isActive: false
+      },
+      {
+        title: 'Danh mục',
+        url: '/category',
+        icon: 'dashboard',
+        shortcut: ['v', 'v'],
+        isActive: false
+      },
+      {
+        title: 'Loại sản phẩm',
+        url: '/product-type',
+        icon: 'product',
         shortcut: ['p', 'p'],
         isActive: false
       },
-
       {
-        title: 'Nhân viên',
-        url: '/manager/staff',
-        icon: 'attendees',
-        shortcut: ['v', 'v'],
+        title: 'Sản phẩm',
+        url: '/product',
+        icon: 'shirt',
+        shortcut: ['p', 'p'],
         isActive: false
       }
+      // {
+      //   title: 'Hàng tồn kho',
+      //   url: '/manager/inventory',
+      //   icon: 'blocks',
+      //   shortcut: ['p', 'p'],
+      //   isActive: false
+      // }
     ]
   },
   {
@@ -90,5 +93,12 @@ export const navItemsManager: any = [
         isActive: false
       }
     ]
+  }
+];
+
+export const navItemsManager: any = [
+  {
+    label: 'Quản lý',
+    detail: []
   }
 ];

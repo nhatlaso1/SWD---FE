@@ -2,6 +2,7 @@ import BasePages from '@/components/shared/base-pages.js';
 import { OverViewTab } from './components/overview/index.js';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AddCategory } from './components/add/index.js';
+import __helpers from '@/helpers/index.js';
 
 export default function CategoryPage() {
   return (
@@ -17,7 +18,9 @@ export default function CategoryPage() {
         <Tabs defaultValue="overview" className="space-y-4">
           <TabsList>
             <TabsTrigger value="overview">Danh sách Danh mục</TabsTrigger>
-            <TabsTrigger value="add-exam-schedule">Thêm Danh mục</TabsTrigger>
+            {__helpers.isAdmin() && (
+              <TabsTrigger value="add-exam-schedule">Thêm Danh mục</TabsTrigger>
+            )}
           </TabsList>
           <TabsContent value="overview" className="space-y-4">
             <OverViewTab />

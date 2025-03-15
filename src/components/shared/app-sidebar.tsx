@@ -8,10 +8,7 @@ import {
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuGroup,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
 import {
@@ -29,13 +26,10 @@ import {
   SidebarMenuSubItem,
   SidebarRail
 } from '@/components/ui/sidebar';
-import { navItemsManager } from '@/constants/data';
+import { navItems } from '@/constants/data';
 import {
-  BadgeCheck,
-  Bell,
   ChevronRight,
   ChevronsUpDown,
-  CreditCard,
   GalleryVerticalEnd,
   LogOut
 } from 'lucide-react';
@@ -47,6 +41,7 @@ import { Icons } from '../ui/icons';
 // import { useDispatch } from 'react-redux';
 // import { useEffect } from 'react';
 import __helpers from '@/helpers';
+import { useEffect, useState } from 'react';
 
 export const company = {
   name: 'Inventory',
@@ -59,16 +54,23 @@ export default function AppSidebar() {
   const pathname = usePathname();
   // const { data: dataInfoUser } = useGetInfoUser();
   // const dispatch = useDispatch();
+  const [infoUser, setInfoUser] = useState<any>(null);
 
-  // useEffect(() => {
-  //   if (dataInfoUser) {
-  //     dispatch(setInfoUser(dataInfoUser));
-  //   }
-  // }, []);
-  // const handleLogout = () => {
-  //   __helpers.cookie_delete('AT');
-  //   window.location.href = '/login';
-  // };
+  useEffect(() => {
+    const token = __helpers.cookie_get('AT');
+    if (!token) {
+      window.location.href = '/login';
+    } else {
+      const info = __helpers.decodeToken(token);
+      console.log(info);
+      setInfoUser(info);
+    }
+  }, []);
+  const handleLogout = () => {
+    __helpers.cookie_delete('AT');
+    __helpers.localStorage_delete('role');
+    window.location.href = '/login';
+  };
 
   return (
     <Sidebar collapsible="icon">
@@ -85,12 +87,11 @@ export default function AppSidebar() {
       </SidebarHeader>
       <SidebarContent className="overflow-x-hidden">
         <SidebarGroup>
-          {navItemsManager.map((parent, index) => (
+          {navItems.map((parent, index) => (
             <div key={index}>
               <SidebarGroupLabel>{parent.label}</SidebarGroupLabel>
               <SidebarMenu>
                 {parent?.detail.map((item) => {
-                  console.log('item', item);
                   const Icon = item.icon ? Icons[item.icon] : Icons.dashboard;
                   return item?.items && item?.items?.length > 0 ? (
                     <Collapsible
@@ -162,7 +163,7 @@ export default function AppSidebar() {
                     <AvatarImage
                       src={
                         session?.user?.image ||
-                        'https://ui.shadcn.com/avatars/shadcn.jpg'
+                        'https://upload.wikimedia.org/wikipedia/commons/9/99/Sample_User_Icon.png'
                       }
                       alt={session?.user?.name || ''}
                     />
@@ -172,10 +173,11 @@ export default function AppSidebar() {
                   </Avatar>
                   <div className="grid flex-1 text-left text-sm leading-tight">
                     <span className="truncate font-semibold">
-                      {session?.user?.name || 'admin'}
+                      {infoUser?.username || 'user'}
                     </span>
                     <span className="truncate text-xs">
-                      {session?.user?.email || 'admin@inventory.com'}
+                      {`${infoUser?.username}@inventory.com` ||
+                        'user@inventory.com'}
                     </span>
                   </div>
                   <ChevronsUpDown className="ml-auto size-4" />
@@ -187,50 +189,15 @@ export default function AppSidebar() {
                 align="end"
                 sideOffset={4}
               >
-                <DropdownMenuLabel className="p-0 font-normal">
-                  <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                    <Avatar className="h-8 w-8 rounded-lg">
-                      <AvatarImage
-                        src={
-                          session?.user?.image ||
-                          'https://ui.shadcn.com/avatars/shadcn.jpg'
-                        }
-                        alt={session?.user?.name || ''}
-                      />
-                      <AvatarFallback className="rounded-lg">
-                        {session?.user?.name?.slice(0, 2)?.toUpperCase() ||
-                          'CN'}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="grid flex-1 text-left text-sm leading-tight">
-                      <span className="truncate font-semibold">
-                        {session?.user?.name || 'Henry'}
-                      </span>
-                      <span className="truncate text-xs">
-                        {session?.user?.email || 'henry@eventz.com'}
-                      </span>
-                    </div>
-                  </div>
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-
-                <DropdownMenuGroup>
+                {/* <DropdownMenuGroup>
                   <DropdownMenuItem className="gap-2">
                     <BadgeCheck size={17} />
                     Tài khoản của tôi
                   </DropdownMenuItem>
-                  <DropdownMenuItem className="gap-2">
-                    <CreditCard size={17} />
-                    Hóa đơn thanh toán
-                  </DropdownMenuItem>
-                  <DropdownMenuItem className="gap-2">
-                    <Bell size={17} />
-                    Liên hệ hỗ trợ
-                  </DropdownMenuItem>
-                </DropdownMenuGroup>
-                <DropdownMenuSeparator />
+                </DropdownMenuGroup> */}
+                {/* <DropdownMenuSeparator /> */}
                 <DropdownMenuItem
-                  // onClick={() => handleLogout()}
+                  onClick={() => handleLogout()}
                   className="gap-2"
                 >
                   <LogOut size={17} />

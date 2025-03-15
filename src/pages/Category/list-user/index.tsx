@@ -17,8 +17,8 @@ export default function ListUser({ data, pageCount }: TTableProps) {
           pageCount={pageCount}
           showAdd={false}
           heightTable="50dvh"
-          placeHolderInputSearch="Mã môn..."
-          showSearch={false}
+          placeHolderInputSearch="Nội dung..."
+          showSearch={true}
         />
       )}
     </>

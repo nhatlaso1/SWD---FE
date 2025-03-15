@@ -60,7 +60,6 @@ export default function DataTable<TData, TValue>({
   renderSettings
 }: DataTableProps<TData, TValue>) {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [searchTerm] = useState('');
   // Search params
   const page = searchParams?.get('page') ?? '1';
   const pageAsNumber = Number(page);
@@ -76,6 +75,7 @@ export default function DataTable<TData, TValue>({
   });
 
   const [sorting, setSorting] = useState<SortingState>([]);
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     setSearchParams({
@@ -119,14 +119,10 @@ export default function DataTable<TData, TValue>({
           <InputSearch
             placeholder={placeHolderInputSearch}
             onSubmit={(value) => {
-              setSearchParams({
-                ...Object.fromEntries(searchParams),
-                keyword: value
-              });
+              setSearchTerm(value);
             }}
           />
         )}
-        {/* <Settings2 className="h-6 w-6" /> */}
         {isRenderSettings && renderSettings && renderSettings()}
       </div>
       <ScrollArea

@@ -1,7 +1,8 @@
 import BasePages from '@/components/shared/base-pages.js';
 import { OverViewTab } from './components/overview/index.js';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { AddWareHouse } from './components/overview/add/index.js';
+import { AddProduct } from './components/overview/add/index.js';
+import __helpers from '@/helpers/index.js';
 
 export default function ProductPage() {
   return (
@@ -17,13 +18,15 @@ export default function ProductPage() {
         <Tabs defaultValue="overview" className="space-y-4">
           <TabsList>
             <TabsTrigger value="overview">Danh sách sản phẩm</TabsTrigger>
-            <TabsTrigger value="add-exam-schedule">Thêm sản phẩm</TabsTrigger>
+            {__helpers.localStorage_get('role') === 'ADMIN' && (
+              <TabsTrigger value="add-exam-schedule">Thêm sản phẩm</TabsTrigger>
+            )}
           </TabsList>
           <TabsContent value="overview" className="space-y-4">
             <OverViewTab />
           </TabsContent>
           <TabsContent value="add-exam-schedule" className="space-y-4">
-            <AddWareHouse />
+            <AddProduct />
           </TabsContent>
         </Tabs>
       </BasePages>

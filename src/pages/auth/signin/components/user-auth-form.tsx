@@ -8,10 +8,13 @@ import {
   FormMessage
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import __helpers from '@/helpers';
+import { useLogin } from '@/queries/auth.query';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
+
 // Define form schema with zod
 const formSchema = z.object({
   username: z
@@ -24,6 +27,7 @@ type UserFormValue = z.infer<typeof formSchema>;
 
 export default function UserAuthForm() {
   const [loading, setLoading] = useState(false);
+  const { mutateAsync: login } = useLogin();
 
   const defaultValues = {
     username: '',
@@ -38,17 +42,24 @@ export default function UserAuthForm() {
   const onSubmit = async (data: UserFormValue) => {
     setLoading(true);
     try {
-      window.location.href = '/';
+      const model = {
+        user_name: data.username,
+        password: data.password
+      };
+      const res = await login(model);
+      console.log(res);
+      if (res) {
+        const token = res.token;
+        __helpers.cookie_set('AT', token);
 
-      // const res = await login(data);
-      // if (res) {
-      //   helper.cookie_set('AT', res);
-      //   const userDetail = await helper.decodeToken(res);
-      //   if (userDetail.role === 'ADMIN') {
-      //   } else {
-      //     window.location.href = '/subject';
-      //   }
-      // }
+        const userDetail = await __helpers.decodeToken(token);
+        __helpers.localStorage_set('role', userDetail.role);
+        if (userDetail.role === 'ADMIN') {
+          window.location.href = '/manager/overview';
+        } else {
+          window.location.href = '/manager/overview';
+        }
+      }
     } catch (err: any) {
       form.setError('password', {
         type: 'manual',

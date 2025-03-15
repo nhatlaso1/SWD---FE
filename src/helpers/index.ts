@@ -73,7 +73,7 @@ class helpers {
   generateBaseURLClient() {
     const baseURL =
       process.env.NODE_ENV === 'production'
-        ? 'https://v2.hotrohoctap.net/'
+        ? 'https://temp/'
         : 'http://localhost:3000/';
     return baseURL;
   }

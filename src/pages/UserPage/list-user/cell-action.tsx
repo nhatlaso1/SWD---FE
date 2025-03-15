@@ -1,6 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import type React from 'react';
+
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -10,7 +12,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator
 } from '@/components/ui/dropdown-menu';
-import { MoreHorizontal, View, Edit, Trash2, ShieldCheck } from 'lucide-react';
+import { MoreHorizontal, Edit, Trash2, ShieldCheck } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import {
   Dialog,
@@ -29,49 +31,101 @@ import {
   SelectTrigger,
   SelectValue
 } from '@/components/ui/select';
-import { useRouter } from '@/routes/hooks';
 
-interface UserCellActionProps {
-  data: {
-    id: number;
-    name: string;
-    email: string;
-    role: string;
-  };
-}
+import {
+  useAssignWarehouse,
+  useDeleteUser,
+  useGetAllWarehouse,
+  useUpdateUser
+} from '@/queries/admin.query';
+import __helpers from '@/helpers';
 
-export const CellAction: React.FC<UserCellActionProps> = ({ data }) => {
-  const router = useRouter();
+export const CellAction: React.FC<any> = ({ data }) => {
   const { toast } = useToast();
   const [openEdit, setOpenEdit] = useState(false);
   const [openDelete, setOpenDelete] = useState(false);
-  const [openPermissions, setOpenPermissions] = useState(false);
+  const [openWarehouse, setOpenWarehouse] = useState(false);
+  const [name, setName] = useState('');
+  const [selectedWarehouse, setSelectedWarehouse] = useState('');
 
-  const handleDelete = () => {
-    // Xử lý xóa người dùng
-    setOpenDelete(false);
-    toast({
-      title: 'Đã xóa thành công',
-      description: `Người dùng với ID ${data.id} đã được xóa.`
-    });
+  const { mutateAsync: deleteUser } = useDeleteUser();
+  const { mutateAsync: assignWarehouse } = useAssignWarehouse();
+  const { mutateAsync: updateUser } = useUpdateUser();
+  const { data: dataAPIWarehouse } = useGetAllWarehouse();
+  const dataWarehouse = dataAPIWarehouse?.data;
+  console.log(dataWarehouse);
+  useEffect(() => {
+    setName(data.full_name);
+  }, [data]);
+
+  const handleDelete = async () => {
+    try {
+      await deleteUser(data.user_code);
+      setOpenDelete(false);
+      toast({
+        title: 'Đã xóa thành công',
+        description: 'Người dùng đã được xóa khỏi hệ thống.',
+        variant: 'success'
+      });
+    } catch (error) {
+      toast({
+        title: 'Lỗi',
+        description: 'Không thể xóa người dùng. Vui lòng thử lại sau.',
+        variant: 'destructive'
+      });
+    }
   };
 
-  const handleSave = (type: string) => {
-    // Xử lý lưu thông tin
-    if (type === 'edit') setOpenEdit(false);
-    if (type === 'permissions') setOpenPermissions(false);
+  const handleSave = async (type: string) => {
+    try {
+      if (type === 'edit') {
+        const model = {
+          user_id: data.user_code,
+          full_name: name
+        };
+        await updateUser(model);
+        setOpenEdit(false);
+      } else if (type === 'warehouse') {
+        if (!selectedWarehouse) {
+          toast({
+            title: 'Lỗi',
+            description: 'Vui lòng chọn nhà kho.',
+            variant: 'destructive'
+          });
+          return;
+        }
 
-    toast({
-      title: 'Đã lưu thành công',
-      description: `Thông tin ${type === 'edit' ? 'người dùng' : 'phân quyền'} đã được cập nhật.`
-    });
+        const model = {
+          user_code: data.user_code,
+          warehouse_code: selectedWarehouse
+        };
+
+        await assignWarehouse(model);
+        setOpenWarehouse(false);
+      }
+
+      toast({
+        title: 'Đã lưu thành công',
+        description: `Thông tin ${type === 'edit' ? 'người dùng' : 'phân quyền'} đã được cập nhật.`,
+        variant: 'success'
+      });
+    } catch (error) {
+      toast({
+        title: 'Lỗi',
+        description: `Không thể cập nhật ${type === 'edit' ? 'thông tin người dùng' : 'phân quyền'}. Vui lòng thử lại sau.`,
+        variant: 'destructive'
+      });
+    }
   };
 
   return (
     <>
       {/* Edit Dialog */}
       <Dialog open={openEdit} onOpenChange={setOpenEdit}>
-        <DialogContent>
+        <DialogContent
+          className="sm:max-w-[725px]"
+          style={{ padding: '1.5rem' }}
+        >
           <DialogHeader>
             <DialogTitle>Chỉnh sửa người dùng</DialogTitle>
             <DialogDescription>
@@ -81,32 +135,11 @@ export const CellAction: React.FC<UserCellActionProps> = ({ data }) => {
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
               <Label htmlFor="edit-name">Họ và tên</Label>
-              <Input id="edit-name" defaultValue={data.name} />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="edit-email">Email</Label>
-              <Input id="edit-email" type="email" defaultValue={data.email} />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="edit-role">Vai trò</Label>
-              <Select
-                defaultValue={
-                  data.role === 'Admin'
-                    ? 'admin'
-                    : data.role === 'Quản lý kho'
-                      ? 'manager'
-                      : 'staff'
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="admin">Admin</SelectItem>
-                  <SelectItem value="manager">Quản lý kho</SelectItem>
-                  <SelectItem value="staff">Nhân viên</SelectItem>
-                </SelectContent>
-              </Select>
+              <Input
+                id="edit-name"
+                defaultValue={name}
+                onChange={(e) => setName(e.target.value)}
+              />
             </div>
           </div>
           <DialogFooter>
@@ -120,7 +153,7 @@ export const CellAction: React.FC<UserCellActionProps> = ({ data }) => {
 
       {/* Delete Dialog */}
       <Dialog open={openDelete} onOpenChange={setOpenDelete}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>Xác nhận xóa</DialogTitle>
             <DialogDescription>
@@ -139,96 +172,75 @@ export const CellAction: React.FC<UserCellActionProps> = ({ data }) => {
         </DialogContent>
       </Dialog>
 
-      {/* Permissions Dialog */}
-      <Dialog open={openPermissions} onOpenChange={setOpenPermissions}>
-        <DialogContent>
+      {/* Warehouse Assignment Dialog */}
+      <Dialog open={openWarehouse} onOpenChange={setOpenWarehouse}>
+        <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>Phân quyền người dùng</DialogTitle>
+            <DialogTitle>Giao quyền quản lý nhà kho</DialogTitle>
             <DialogDescription>
-              Cấp quyền truy cập cho người dùng.
+              Chọn nhà kho để giao quyền quản lý cho người dùng này.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
-            <div className="space-y-4">
-              <div className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  id="perm-users"
-                  className="rounded"
-                  defaultChecked
-                />
-                <Label htmlFor="perm-users">Quản lý người dùng</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  id="perm-products"
-                  className="rounded"
-                  defaultChecked
-                />
-                <Label htmlFor="perm-products">Quản lý sản phẩm</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  id="perm-warehouses"
-                  className="rounded"
-                  defaultChecked
-                />
-                <Label htmlFor="perm-warehouses">Quản lý kho</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  id="perm-categories"
-                  className="rounded"
-                  defaultChecked
-                />
-                <Label htmlFor="perm-categories">Quản lý danh mục</Label>
-              </div>
+            <div className="grid gap-2">
+              <Label htmlFor="warehouse-select">Nhà kho</Label>
+              <Select
+                onValueChange={setSelectedWarehouse}
+                value={selectedWarehouse}
+              >
+                <SelectTrigger id="warehouse-select">
+                  <SelectValue placeholder="Chọn nhà kho" />
+                </SelectTrigger>
+                <SelectContent>
+                  {dataWarehouse?.map((warehouse) => (
+                    <SelectItem
+                      key={warehouse.warehouse_code}
+                      value={warehouse.warehouse_code}
+                    >
+                      {warehouse.warehouse_name} ({warehouse.warehouse_code})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setOpenPermissions(false)}>
+            <Button variant="outline" onClick={() => setOpenWarehouse(false)}>
               Hủy
             </Button>
-            <Button onClick={() => handleSave('permissions')}>
-              Lưu phân quyền
-            </Button>
+            <Button onClick={() => handleSave('warehouse')}>Giao quyền</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      {__helpers.isAdmin() && (
+        <DropdownMenu modal={false}>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="h-8 w-8 p-0">
+              <span className="sr-only">Mở menu</span>
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="bg-primary-foreground">
+            <DropdownMenuLabel>Lựa chọn</DropdownMenuLabel>
 
-      <DropdownMenu modal={false}>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="h-8 w-8 p-0">
-            <span className="sr-only">Mở menu</span>
-            <MoreHorizontal className="h-4 w-4" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="bg-primary-foreground">
-          <DropdownMenuLabel>Lựa chọn</DropdownMenuLabel>
-          <DropdownMenuItem
-            onClick={() => router.push(`/admin/users/${data.id}`)}
-          >
-            <View className="mr-2 h-4 w-4" /> Xem chi tiết
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setOpenEdit(true)}>
-            <Edit className="mr-2 h-4 w-4" /> Chỉnh sửa
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={() => setOpenPermissions(true)}>
-            <ShieldCheck className="mr-2 h-4 w-4" /> Phân quyền
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem
-            onClick={() => setOpenDelete(true)}
-            className="text-destructive focus:text-destructive"
-          >
-            <Trash2 className="mr-2 h-4 w-4" /> Xóa
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+            <DropdownMenuItem onClick={() => setOpenEdit(true)}>
+              <Edit className="mr-2 h-4 w-4" /> Chỉnh sửa thông tin
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setOpenWarehouse(true)}>
+              <ShieldCheck className="mr-2 h-4 w-4" /> Giao quyền quản lý nhà
+              kho
+            </DropdownMenuItem>
+
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onClick={() => setOpenDelete(true)}
+              className="text-destructive focus:text-destructive"
+            >
+              <Trash2 className="mr-2 h-4 w-4" /> Xóa
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )}
     </>
   );
 };
