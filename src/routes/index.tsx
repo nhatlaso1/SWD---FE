@@ -16,6 +16,7 @@ const ManagerOverView = lazy(() => import('@/pages/ManagerOverView'));
 const InventoryPage = lazy(() => import('@/pages/ManagerInventoryPage'));
 const SuppliesPage = lazy(() => import('@/pages/ManagerSuppliesPage'));
 const ManagerStaffPage = lazy(() => import('@/pages/ManagerStaff'));
+const ProductType = lazy(() => import('@/pages/ProductType'));
 
 // ----------------------------------------------------------------------
 
@@ -48,6 +49,10 @@ export default function AppRouter() {
         {
           path: '/product',
           element: <ProductPage />
+        },
+        {
+          path: '/product-type',
+          element: <ProductType />
         },
         {
           path: '/manager/overview',
