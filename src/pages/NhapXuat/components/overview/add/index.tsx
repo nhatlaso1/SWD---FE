@@ -2,7 +2,7 @@
 
 import type React from 'react';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { PlusCircle, Trash2 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -27,7 +27,8 @@ import {
 import {
   useCreatePhieuNhapXuat,
   useGetAllProduct,
-  useGetAllWarehouse
+  useGetAllWarehouse,
+  useGetProductInWarehouse
 } from '@/queries/admin.query';
 import { toast } from '@/components/ui/use-toast';
 
@@ -44,15 +45,31 @@ interface Transaction {
   items: TransactionItem[];
 }
 
+interface Product {
+  product_code: string;
+  product_name: string;
+  name?: string;
+  quantity?: string;
+  quantity_in_warehouse?: string;
+  size?: string;
+  color?: string;
+  productType_name?: string;
+  productType_code?: string;
+  status?: string;
+}
+
 export default function Add() {
   const { data: dataProduct, isPending: pendingProduct } = useGetAllProduct();
-  const products = dataProduct?.data || [];
+  const allProducts = dataProduct?.data || [];
   const { data: dataWarehouse, isPending: pendingWarehouse } =
     useGetAllWarehouse();
   const warehouses = dataWarehouse?.data || [];
   const { mutateAsync: createPhieuNhapXuat, isPending: isSubmitting } =
     useCreatePhieuNhapXuat();
 
+  const { mutateAsync: getProductInWareHouse } = useGetProductInWarehouse();
+
+  const [products, setProducts] = useState<Product[]>([]);
   const [transaction, setTransaction] = useState<Transaction>({
     transactionType: 'EXPORT',
     sourceWarehouseCode: '',
@@ -63,6 +80,42 @@ export default function Add() {
   const [selectedQuantity, setSelectedQuantity] = useState<string>('');
   const [quantityError, setQuantityError] = useState<string>('');
 
+  // Fetch products in warehouse when source warehouse changes for EXPORT
+  useEffect(() => {
+    const fetchWarehouseProducts = async () => {
+      if (
+        transaction.transactionType === 'EXPORT' &&
+        transaction.sourceWarehouseCode
+      ) {
+        try {
+          const result = await getProductInWareHouse(
+            transaction.sourceWarehouseCode
+          );
+          if (result?.products) {
+            setProducts(result.products);
+          }
+        } catch (error) {
+          console.error('Error fetching warehouse products:', error);
+          toast({
+            title: 'Lỗi',
+            description: 'Không thể lấy danh sách sản phẩm trong kho.',
+            variant: 'destructive'
+          });
+        }
+      } else if (transaction.transactionType === 'IMPORT') {
+        // For import, show all products
+        setProducts(allProducts);
+      }
+    };
+
+    fetchWarehouseProducts();
+  }, [
+    transaction.transactionType,
+    transaction.sourceWarehouseCode,
+    getProductInWareHouse,
+    allProducts
+  ]);
+
   const handleTransactionTypeChange = (value: 'IMPORT' | 'EXPORT') => {
     if (value === 'IMPORT') {
       setTransaction({
@@ -71,6 +124,8 @@ export default function Add() {
         sourceWarehouseCode: undefined,
         destinationWarehouseCode: ''
       });
+      // For import, show all products
+      setProducts(allProducts);
     } else {
       setTransaction({
         ...transaction,
@@ -78,22 +133,42 @@ export default function Add() {
         destinationWarehouseCode: undefined,
         sourceWarehouseCode: ''
       });
+      // For export, reset products until warehouse is selected
+      setProducts([]);
     }
+    // Reset selected product when changing transaction type
+    setSelectedProduct('');
+    setSelectedQuantity('');
   };
 
-  const handleWarehouseChange = (value: string) => {
+  const handleWarehouseChange = async (value: string) => {
     if (transaction.transactionType === 'IMPORT') {
       setTransaction({ ...transaction, destinationWarehouseCode: value });
     } else {
       setTransaction({ ...transaction, sourceWarehouseCode: value });
+      // Fetch products in the selected warehouse for EXPORT
+      try {
+        const result = await getProductInWareHouse(value);
+        console.log('Result:', result);
+        if (result?.data?.products) {
+          setProducts(result?.data?.products);
+        }
+      } catch (error) {
+        console.error('Error fetching warehouse products:', error);
+      }
     }
+    // Reset selected product when changing warehouse
+    setSelectedProduct('');
+    setSelectedQuantity('');
   };
 
   const validateQuantity = (productCode: string, quantity: string): boolean => {
-    const selectedProduct = products.find(
-      (p) => p.product_code === productCode
-    );
-    if (!selectedProduct) return false;
+    const productToCheck =
+      transaction.transactionType === 'EXPORT'
+        ? products.find((p) => p.product_code === productCode)
+        : allProducts.find((p) => p.product_code === productCode);
+
+    if (!productToCheck) return false;
 
     const numQuantity = Number.parseInt(quantity, 10);
     if (isNaN(numQuantity) || numQuantity <= 0) {
@@ -101,8 +176,13 @@ export default function Add() {
       return false;
     }
 
-    if (numQuantity > selectedProduct.quantity) {
-      setQuantityError(`Số lượng tối đa có sẵn là ${selectedProduct.quantity}`);
+    const availableQuantity =
+      transaction.transactionType === 'EXPORT'
+        ? Number.parseInt(productToCheck.quantity_in_warehouse || '0', 10)
+        : Number.parseInt(productToCheck.quantity || '0', 10);
+
+    if (numQuantity > availableQuantity) {
+      setQuantityError(`Số lượng tối đa có sẵn là ${availableQuantity}`);
       return false;
     }
 
@@ -130,12 +210,19 @@ export default function Add() {
       const additionalQuantity = Number.parseInt(selectedQuantity, 10);
       const totalQuantity = currentQuantity + additionalQuantity;
 
-      const selectedProductData = products.find(
-        (p) => p.product_code === selectedProduct
-      );
-      if (totalQuantity > (selectedProductData?.quantity || 0)) {
+      const productToCheck =
+        transaction.transactionType === 'EXPORT'
+          ? products.find((p) => p.product_code === selectedProduct)
+          : allProducts.find((p) => p.product_code === selectedProduct);
+
+      const availableQuantity =
+        transaction.transactionType === 'EXPORT'
+          ? Number.parseInt(productToCheck?.quantity_in_warehouse || '0', 10)
+          : Number.parseInt(productToCheck?.quantity || '0', 10);
+
+      if (totalQuantity > availableQuantity) {
         setQuantityError(
-          `Tổng số lượng vượt quá số lượng có sẵn ${selectedProductData?.quantity}`
+          `Tổng số lượng vượt quá số lượng có sẵn ${availableQuantity}`
         );
         return;
       }
@@ -147,10 +234,11 @@ export default function Add() {
         items: updatedItems
       });
     } else {
+      const productToUse = products.find(
+        (p) => p.product_code === selectedProduct
+      );
       const productName =
-        products.find((p) => p.product_code === selectedProduct)
-          ?.product_name ||
-        products.find((p) => p.product_code === selectedProduct)?.name;
+        productToUse?.product_name || productToUse?.name || '';
 
       const newItem: TransactionItem = {
         productCode: selectedProduct,
@@ -217,6 +305,7 @@ export default function Add() {
         sourceWarehouseCode: '',
         items: []
       });
+      setProducts([]);
     } catch (error) {
       console.error('Error submitting transaction:', error);
       toast({
@@ -228,8 +317,13 @@ export default function Add() {
   };
 
   const getAvailableQuantity = (productCode: string): number => {
-    const product = products.find((p) => p.product_code === productCode);
-    return product?.quantity || 0;
+    if (transaction.transactionType === 'EXPORT') {
+      const product = products.find((p) => p.product_code === productCode);
+      return Number.parseInt(product?.quantity_in_warehouse || '0', 10);
+    } else {
+      const product = allProducts.find((p) => p.product_code === productCode);
+      return Number.parseInt(product?.quantity || '0', 10);
+    }
   };
 
   if (pendingWarehouse || pendingProduct) {
@@ -310,18 +404,22 @@ export default function Add() {
                   <Select
                     value={selectedProduct}
                     onValueChange={setSelectedProduct}
+                    disabled={products.length === 0}
                   >
                     <SelectTrigger id="product">
                       <SelectValue placeholder="Chọn sản phẩm" />
                     </SelectTrigger>
                     <SelectContent>
-                      {products?.map((product) => (
+                      {products.map((product) => (
                         <SelectItem
                           key={product.product_code}
                           value={product.product_code}
                         >
                           {product.product_name || product.name} (
-                          {product.product_code}) - (Có sẵn: {product.quantity})
+                          {product.product_code}) -
+                          {transaction.transactionType === 'EXPORT'
+                            ? ` (Có sẵn: ${product.quantity_in_warehouse})`
+                            : ` (Có sẵn: ${product.quantity})`}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -342,6 +440,7 @@ export default function Add() {
                     value={selectedQuantity}
                     onChange={(e) => setSelectedQuantity(e.target.value)}
                     placeholder="Nhập số lượng"
+                    disabled={!selectedProduct}
                   />
                   {quantityError && (
                     <p className="mt-1 text-sm text-destructive">
@@ -407,6 +506,7 @@ export default function Add() {
                 setSelectedProduct('');
                 setSelectedQuantity('');
                 setQuantityError('');
+                setProducts([]);
               }}
             >
               Đặt Lại

@@ -154,34 +154,34 @@ export const CellAction: React.FC<any> = ({ data }) => {
 
   return (
     <>
-      {__helpers.isAdmin() && (
-        <DropdownMenu modal={false}>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Mở menu</span>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="bg-primary-foreground">
-            <DropdownMenuLabel>Lựa chọn</DropdownMenuLabel>
-            <DropdownMenuItem onClick={() => setIsOpen(true)}>
-              <Edit className="mr-2 h-4 w-4" /> Chỉnh sửa
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={handleShowProductList}>
-              <PackageSearch className="mr-2 h-4 w-4" /> Danh sách sản phẩm
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={handleShowUserList}>
-              <Users className="mr-2 h-4 w-4" /> Danh sách người quản lý
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              className="text-destructive focus:text-destructive"
-              onClick={handleDelete}
-            >
-              <Trash2 className="mr-2 h-4 w-4" /> Xóa
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      )}
+      <DropdownMenu modal={false}>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" className="h-8 w-8 p-0">
+            <span className="sr-only">Mở menu</span>
+            <MoreHorizontal className="h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="bg-primary-foreground">
+          <DropdownMenuLabel>Lựa chọn</DropdownMenuLabel>
+          {__helpers.isAdmin() && (
+            <>
+              <DropdownMenuItem onClick={() => setIsOpen(true)}>
+                <Edit className="mr-2 h-4 w-4" /> Chỉnh sửa
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleDelete}>
+                <Trash2 className="mr-2 h-4 w-4" /> Xóa
+              </DropdownMenuItem>
+            </>
+          )}
+
+          <DropdownMenuItem onClick={handleShowProductList}>
+            <PackageSearch className="mr-2 h-4 w-4" /> Danh sách sản phẩm
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={handleShowUserList}>
+            <Users className="mr-2 h-4 w-4" /> Danh sách người quản lý
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
 
       {/* Dialog cập nhật số lượng sản phẩm */}
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
