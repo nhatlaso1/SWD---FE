@@ -37,7 +37,8 @@ export const AddUser = () => {
 
   const roleTypes = [
     { value: 'ADMIN', label: 'Quản trị viên' },
-    { value: 'MANAGER', label: 'Quản lý' }
+    { value: 'MANAGER', label: 'Quản lý' },
+    { value: 'STAFF', label: 'Nhân viên' }
   ];
 
   const handleInputChange = (e) => {

@@ -87,7 +87,7 @@ export const navItems: any = [
     detail: [
       {
         title: 'Nhập/xuất vật tư',
-        url: '/manager/suppliles',
+        url: '/nhap-xuat',
         icon: 'import',
         shortcut: ['p', 'p'],
         isActive: false

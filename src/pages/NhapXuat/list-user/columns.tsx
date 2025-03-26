@@ -18,29 +18,13 @@ export const columns: ColumnDef<any>[] = [
     }
   },
   {
-    accessorKey: 'product_code',
-    header: 'Mã sản phẩm',
+    accessorKey: 'exchangeNote_id',
+    header: 'Mã phiếu',
     enableSorting: true
   },
   {
-    accessorKey: 'product_name',
-    header: 'Tên sản phẩm',
-    enableSorting: true
-  },
-  {
-    accessorKey: 'size',
-    header: 'Kích thước',
-    enableSorting: true
-  },
-  {
-    accessorKey: 'color',
-    header: 'Màu sắc',
-    enableSorting: true
-  },
-
-  {
-    accessorKey: 'quantity',
-    header: 'Số lượng',
+    accessorKey: 'transactionType',
+    header: 'Loại giao dịch',
     enableSorting: true
   },
   {
@@ -49,8 +33,32 @@ export const columns: ColumnDef<any>[] = [
     enableSorting: true
   },
   {
-    accessorKey: 'productType_code',
-    header: 'Mã loại sản phẩm',
+    accessorKey: 'created_by',
+    header: 'Người tạo',
+    enableSorting: true
+  },
+
+  {
+    accessorKey: 'approved_by',
+    header: 'Người duyệt',
+    enableSorting: true
+  },
+  {
+    accessorKey: 'date',
+    header: 'Ngày tạo',
+    enableSorting: true,
+    cell: ({ row }) => (
+      <span>{__helpers.convertToDateDDMMYYYY(row.original.date)}</span>
+    )
+  },
+  {
+    accessorKey: 'destination_warehouse_code',
+    header: 'Kho đích',
+    enableSorting: true
+  },
+  {
+    accessorKey: 'source_warehouse_code',
+    header: 'Kho nguồn',
     enableSorting: true
   },
 

@@ -1,4 +1,4 @@
-import BaseRequest from '@/config/axios.config';
+import BaseRequest, { BaseRequestV2 } from '@/config/axios.config';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 export const useGetAllCategory = () => {
@@ -291,6 +291,104 @@ export const useAssignWarehouse = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ['get-all-user']
+      });
+    }
+  });
+};
+
+export const useGetProductInWarehouse = () => {
+  return useMutation({
+    mutationKey: ['get-product-in-warehouse'],
+    mutationFn: async (warehouseCode: string) => {
+      return await BaseRequest.Get(`/api/warehouses/products/${warehouseCode}`);
+    }
+  });
+};
+
+export const useGetUserInWarehouse = () => {
+  return useMutation({
+    mutationKey: ['get-user-in-warehouse'],
+    mutationFn: async (warehouseCode: string) => {
+      return await BaseRequest.Get(`/api/warehouses/${warehouseCode}`);
+    }
+  });
+};
+
+export const useGetAllPhieuNhapXuat = () => {
+  return useQuery({
+    queryKey: ['get-phieu-nhap'],
+    queryFn: async () => {
+      return await BaseRequest.Get(`/api/exchange-notes/all`);
+    }
+  });
+};
+
+export const useCreatePhieuNhapXuat = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationKey: ['create-phieu-nhap'],
+    mutationFn: async (model: any) => {
+      return await BaseRequestV2.Post(
+        `https://app-250312143530.azurewebsites.net/api/transactions/create`,
+        model
+      );
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['get-phieu-nhap']
+      });
+    }
+  });
+};
+
+export const useAcceptPhieuNhapXuat = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationKey: ['accept-phieu-nhap'],
+    mutationFn: async (model: any) => {
+      return await BaseRequestV2.Post(
+        `https://app-250312143530.azurewebsites.net/api/transactions/approve/${model.exchangeNote_id}`
+      );
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['get-phieu-nhap']
+      });
+    }
+  });
+};
+
+export const useFinishPhieuNhapXuat = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationKey: ['finish-phieu-nhap'],
+    mutationFn: async (model: any) => {
+      return await BaseRequestV2.Post(
+        `https://app-250312143530.azurewebsites.net/api/transactions/finalize/${model.exchangeNote_id}`,
+        model
+      );
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['get-phieu-nhap']
+      });
+    }
+  });
+};
+
+export const useRejectPhieuNhapXuat = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationKey: ['reject-phieu-nhap'],
+    mutationFn: async (model: any) => {
+      return await BaseRequestV2.Post(
+        `https://app-250312143530.azurewebsites.net/api/transactions/cancel/${model.exchangeNote_id}`,
+        model
+      );
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['get-phieu-nhap']
       });
     }
   });
